@@ -10,7 +10,8 @@ public class HexGrid : MonoBehaviour
     public int height = 6;
     public HexCell cellPrefab;
     public Text cellLabelPrefab;
-
+    public Color defaultColor = Color.white;
+    
     private HexCell[] cells;
     private Canvas gridCanvas;
     private HexMesh hexMesh;
@@ -34,14 +35,17 @@ public class HexGrid : MonoBehaviour
         hexMesh.Triangulate(cells);
     }
 
-    private void Update()
+    public void ColorCell(Vector3 position, Color color)
     {
-        if (Input.GetMouseButton(0))
-        {
-            HandleInput();
-        }
+        position = transform.InverseTransformPoint(position);
+        HexCoordinates coordinates = HexCoordinates.FromPosition(position);
+        Debug.Log(coordinates);
+        // index是一个一维的数组，网格是二维的，需要一个转换映射，同时由于六边形是错开排列的所以要计算偏移，否则奇数行会出错
+        int index = coordinates.X + coordinates.Z * width + coordinates.Z / 2;
+        HexCell cell = cells[index];
+        cell.color = color;
+        hexMesh.Triangulate(cells);
     }
-
     private void CreateCells(int x, int z, int i)
     {
         Vector3 position;
@@ -54,28 +58,12 @@ public class HexGrid : MonoBehaviour
         cell.transform.SetParent(transform, false);
         cell.transform.localPosition = position;
         cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
+        cell.color = defaultColor;
         cell.name = cell.coordinates.ToString();
         Text label = Instantiate<Text>(cellLabelPrefab);
         label.rectTransform.SetParent(gridCanvas.transform, false);
         label.rectTransform.anchoredPosition =
             new Vector2(position.x, position.z);
         label.text = cell.coordinates.ToStringOnSeparateLines();
-    }
-
-    void HandleInput()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit))
-        {
-            TouchCell(hit.point);
-        }
-    }
-
-    void TouchCell(Vector3 position)
-    {
-        position = transform.InverseTransformPoint(position);
-        HexCoordinates coordinates = HexCoordinates.FromPosition(position);
-        Debug.Log(coordinates);
     }
 }

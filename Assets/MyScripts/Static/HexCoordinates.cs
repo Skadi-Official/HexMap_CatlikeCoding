@@ -47,14 +47,27 @@ public class HexCoordinates
     {
         float x = position.x / (HexMetrics.innerRadius * 2);
         float y = -x;
+        // z方向的位置对cube坐标xy的修正量，HexMetrics.outerRadius * 3f是两行六边形的高度
+        // 根据当前 z 高度推算出横向偏移应该是多少格
         float offset = position.z / (HexMetrics.outerRadius * 3f);
         x -= offset;
         y -= offset;
         int iX = Mathf.RoundToInt(x);
         int iY = Mathf.RoundToInt(y);
         int iZ = Mathf.RoundToInt(-x -y);
+        // 修复最大的误差轴，xz谁最大就重新计算谁，由于y是被xz约束的，所以不用单独处理
         if (iX + iY + iZ != 0) {
-            Debug.LogWarning("rounding error!");
+            float dX = Mathf.Abs(x - iX);
+            float dY = Mathf.Abs(y - iY);
+            float dZ = Mathf.Abs(-x - y - iZ);
+            if (dX > dY && dX > dZ)
+            {
+                iX = -iY - iZ;
+            }
+            else if(dZ > dY)
+            {
+                iZ = -iX - iY;
+            }
         }
         return new HexCoordinates(iX, iZ);
     }

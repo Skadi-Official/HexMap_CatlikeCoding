@@ -10,6 +10,7 @@ public class HexMesh : MonoBehaviour
     private List<Vector3> vertices;
     private List<int> triangles;
     private MeshCollider meshCollider;
+    private List<Color> colors;
     private void Awake()
     {
         GetComponent<MeshFilter>().mesh = hexMesh = new Mesh();
@@ -20,6 +21,7 @@ public class HexMesh : MonoBehaviour
         hexMesh.name = "Hex Mesh";
         vertices = new List<Vector3>();
         triangles = new List<int>();
+        colors = new List<Color>();
     }
 
     public void Triangulate(HexCell[] cells)
@@ -27,6 +29,7 @@ public class HexMesh : MonoBehaviour
         hexMesh.Clear();
         vertices.Clear();
         triangles.Clear();
+        colors.Clear();
         for (int i = 0; i < cells.Length; i++)
         {
             Triangulate(cells[i]);
@@ -34,6 +37,7 @@ public class HexMesh : MonoBehaviour
         // 声明时的顶点为了便于操作是列表，要转化成数组
         hexMesh.vertices = vertices.ToArray();
         hexMesh.triangles = triangles.ToArray();
+        hexMesh.colors = colors.ToArray();
         hexMesh.RecalculateNormals();
         meshCollider.sharedMesh = hexMesh;
     }
@@ -58,8 +62,15 @@ public class HexMesh : MonoBehaviour
                 center,
                 center + HexMetrics.corners[i],
                 center + HexMetrics.corners[i + 1]);
+            AddTriangleColor(cell.color);
         }
+        
     }
 
-    
+    void AddTriangleColor(Color color)
+    {
+        colors.Add(color);
+        colors.Add(color);
+        colors.Add(color);
+    }
 }
